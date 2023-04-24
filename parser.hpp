@@ -6,6 +6,7 @@
 #include <memory>
 
 namespace ArgParse{
+  // Helper Class that is subject to change
   class Args{
     public:
       Args(
@@ -16,6 +17,12 @@ namespace ArgParse{
         _helpString = std::move(helpString);
         _bulk       = many;
         _required   = required;
+      }
+      const std::string& data() const{
+        return _data[0];
+      }
+      const std::vector<std::string>& allData() const{
+        return _data;
       }
     private:
       bool _bulk;
