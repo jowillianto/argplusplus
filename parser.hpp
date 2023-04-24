@@ -73,7 +73,7 @@ namespace ArgParse{
           if (isKwargStart && !haveKey){
             if (_kwargs.count(arg.substr(2)) == 0){
               std::cerr<<"No such key "<< arg << std::endl;
-              std::cerr<<"Call " << argv[0] << " -h for help";
+              std::cerr<<"Call " << argv[0] << " -h for help"<<std::endl;
               throw "Error Parsing";
             }
             curArg  = arg.substr(2);
@@ -98,8 +98,8 @@ namespace ArgParse{
             throw "Error Parsing";
         }
         if (haveKey){
-          std::cerr<<"Key " << curArg << " have no value";
-          std::cerr<<"Call "<< argv[0] << " -h for help";
+          std::cerr<<"Key " << curArg << " have no value"<<std::endl;
+          std::cerr<<"Call "<< argv[0] << " -h for help"<<std::endl;
           throw "Error Parsing";
         }
         // Check requireds
@@ -110,7 +110,7 @@ namespace ArgParse{
         }
         for (const auto& [key, entry] : _kwargs){
           if (entry._required && entry._data.size() == 0){
-            std::cerr<<"Named Arguments for key " << key <<" have not been given";
+            std::cerr<<"Named Arguments for key " << key <<" have not been given"<<std::endl;
           }
         }
         _parsed = true;
