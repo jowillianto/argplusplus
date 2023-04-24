@@ -40,7 +40,7 @@ namespace ArgParse{
           std::cout<<"\t"<<entry._helpString<<std::endl;
         std::cout<<"Keyword arguments List : "<<std::endl;
         for(const auto& [key, entry] : _kwargs)
-          std::cout<<"\t--"<<key<<":"<<entry._helpString<<std::endl;
+          std::cout<<"\t--"<<key<<"\t\t:"<<entry._helpString<<std::endl;
       }
       void addArgument(Args&& args){
         _args.emplace_back(args);
