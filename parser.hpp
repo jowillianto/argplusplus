@@ -121,12 +121,13 @@ namespace ArgParse{
         }
         if (_kwargs.count(key) == 0)
           throw "No such name";
-        
+        return _kwargs.at(key);
       }
-      const Args& getArgs(size_t args) const{
+      const Args& getArgs(size_t key) const{
         if (_parsed == false){
           throw "Parsing have not been done";
         }
+        return _args.at(key);
       }
     private:
       std::map<std::string, Args> _kwargs;
