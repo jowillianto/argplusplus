@@ -102,17 +102,22 @@ namespace ArgParse{
           std::cerr<<"Call "<< argv[0] << " -h for help"<<std::endl;
           throw "Error Parsing";
         }
+        size_t errCount = 0;
         // Check requireds
         for (const auto& entry : _args){
           if (entry._required && entry._data.size() == 0){
             std::cerr<<"Ordered Arguments are incomplete";
+            errCount += 1;
           }
         }
         for (const auto& [key, entry] : _kwargs){
           if (entry._required && entry._data.size() == 0){
             std::cerr<<"Named Arguments for key " << key <<" have not been given"<<std::endl;
+            errCount += 1;
           }
         }
+        if (errCount > 0) 
+          throw "Error Parsing";
         _parsed = true;
       }
       const Args& getKwargs(const std::string& key) const{
