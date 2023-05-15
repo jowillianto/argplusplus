@@ -58,7 +58,7 @@ namespace ArgParse{
       void parse(int argc, char** argv){
         // Check for -h and print help if exists
         for(size_t i = 1; i < argc; i++){
-          if(argv[i] == "-h"){
+          if(argv[i] == std::string("-h")){
             printHelp();
             return;
           }
