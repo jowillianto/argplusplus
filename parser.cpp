@@ -39,22 +39,22 @@ namespace ArgParse{
   }
   std::vector<std::string> ArgsData::splitBySeparator(char sep) const{
     // Copy Internal Data before using it
-    std::string data;
+    std::string data = _data;
     data.reserve(_data.size() + 1);
     data.push_back(sep);
     // Separate it
     std::vector<std::string> separated;
-    size_t entryCount = std::count(_data.begin(), _data.end(), sep);
+    size_t entryCount = std::count(data.begin(), data.end(), sep);
     separated.reserve(entryCount + 1);
     // Actually Split it
     size_t begPointer = 0;
     size_t endPointer = 0;
-    for(endPointer = 0; endPointer < _data.size(); endPointer++){
-      if (_data.at(endPointer) == sep){
+    for(endPointer = 0; endPointer < data.size(); endPointer++){
+      if (data.at(endPointer) == sep){
         separated.push_back(
-          std::string(_data.begin() + begPointer, _data.begin() + endPointer)
+          std::string(data.begin() + begPointer, data.begin() + endPointer)
         );
-        begPointer = endPointer;
+        begPointer = endPointer + 1;
       }
     }
     return separated;
