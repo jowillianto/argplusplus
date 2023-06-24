@@ -1,6 +1,6 @@
 # ARGPLUSPLUS
 Command Line argument parsing tool to parse command line arguments in C++. Currently keyword arguments support are the best and is hence recommended when using the library. A simple example of using this library is : 
-```
+```C++
 #include <argplusplus/parser.hpp>
 #include <filesystem>
 
@@ -15,7 +15,7 @@ int main(int argc, char** argv){
 ```
 
 ## Usage Documentation
-```
+```C++
   addArgument(
     std::string&& keyName, // The name of the keyword argument
     std::string&& helpString = "", // The helpstring to display when --help is called
