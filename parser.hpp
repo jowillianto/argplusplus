@@ -140,9 +140,10 @@ namespace ArgParse{
       void _parse(int argc, char** argv);
       void _keyExistOrException(const Key& key) const;
       void _posExistOrException(size_t pos) const;
+      void _parsedOrException() const;
       Key _keyNameFromKey(const Key& key) const;
       void _parseArgv(int argc, char** argv);
-
+      bool _parsed = false;
   };
   template<typename T>
   inline T Args::convert() const{
@@ -167,27 +168,32 @@ namespace ArgParse{
   }
   template<typename ...T>
   inline void Parser::addArgument(Key&& key, T&& ...args){
-    validateKey(key);
+    if (!validateKey(key))
+      throw InvalidKey(key);
     _kwargs.emplace(_keyNameFromKey(key), Args(std::forward<T>(args)...));
   }
   template<typename T>
   inline T Parser::get(size_t pos) const{
+    _parsedOrException();
     _posExistOrException(pos);
     return _args.at(pos).convert<T>();
   }
   template<typename T>
   inline T Parser::get(const std::string& key) const{
+    _parsedOrException();
     _keyExistOrException(key);
     return _kwargs.at(key).convert<T>();
   }
   template<typename T>
   inline std::vector<T> Parser::get(size_t pos, char sep) const{
+    _parsedOrException();
     _posExistOrException(pos);
     const Args& arg = _args.at(pos);
     return arg.convert<T>(sep);
   }
   template<typename T>
   inline std::vector<T> Parser::get(const Key& key, char sep) const{
+    _parsedOrException();
     _keyExistOrException(key);
     const Args& arg = _kwargs.at(key);
     return arg.convert<T>(sep);

@@ -106,6 +106,10 @@ namespace ArgParse{
     if (!doesPosExist(pos))
       throw OutOfBounds(pos);
   }
+  void Parser::_parsedOrException() const{
+    if (!_parsed)
+      throw GenericParserError("Parsing have not been done");
+  }
   bool Parser::isValidKey(const Key& key){
     return key != "-h" && key != "--help" && isKwargTag(key);
   }
@@ -121,30 +125,37 @@ namespace ArgParse{
       throw InvalidKey(key);
   }
   const std::string& Parser::get(size_t pos) const{
+    _parsedOrException();
     _posExistOrException(pos);
     return _args.at(pos).data();
   }
   const std::string& Parser::get(const std::string& key) const{
+    _parsedOrException();
     _keyExistOrException(key);
     return _kwargs.at(key).data();
   }
   void Parser::getHelpString(std::ostream& stream) const{
     stream << "Ordered Arguments List : \n";
     for (const auto& entry : _args){
-      stream << "\t" << entry.helpString() << "\n";
+      stream << "\t" << entry.helpString();
+      stream <<  " default : " << entry.defaultValue() << "\n";
     }
     stream << "Keyword Arguments List : \n";
     for(const auto& [key, entry] : _kwargs){
       if (key.length() == 1) stream << "\t-" << key;
       else stream << "\t--" << key;
-      stream << "\t\t : "<< entry.helpString() << std::endl;
+      stream << "\t\t : "<< entry.helpString();
+      stream <<  " default : " << entry.defaultValue() << "\n";
     }
   }
   void Parser::parse(
     int argc, char** argv, bool exitOnFail, bool printHelp
   ){
+    if (_parsed)
+      throw GenericParserError("Content have been parsed");
     try{
       _parse(argc, argv);
+      _parsed = true;
     }
     catch(const ParserError& e){
       if (exitOnFail){
@@ -169,11 +180,11 @@ namespace ArgParse{
     }
   }
   bool Parser::isKwargTag(const std::string& key){
-    return (
+    return key.length() > 1 && ((
       key.length() == 2 && key.at(0) == '-'
     ) || (
       key.length() > 2 && key.substr(0, 2) == "--"
-    );
+    ));
   }
   void Parser::_parseArgv(int argc, char** argv){
     size_t argCount = 0;
