@@ -9,10 +9,19 @@
 #define ARG_SEPARATOR ','
 
 namespace ArgParse{
+  /**
+   * @brief this will be thrown when a parser error is thrown. This class is 
+   * only an inteface for specific parser errors. Use this to catch most parse
+   * errors
+  */
   class ParserError : public std::exception{
     public:
       virtual const char* what() const noexcept;
   };
+  /**
+   * @brief thrown for miscellanenous uncategorized errors or unexpected errors
+   * that can happen when parsing the content of argv. 
+  */
   class GenericParserError : public ParserError{
     public:
       GenericParserError(std::string&& msg);
@@ -20,7 +29,13 @@ namespace ArgParse{
     private:
       std::string _msg;
   };
+  /**
+   * @brief Thrown to print out help message
+  */
   class PrintHelp{};
+  /**
+   * @brief Thrown when an invalid key is found in the parser
+  */
   class InvalidKey : public ParserError{
     public:
       InvalidKey(const std::string& key);
@@ -28,6 +43,9 @@ namespace ArgParse{
     private:
       std::string _msg;
   };
+  /**
+   * @brief thrown when a key requested is not in the parsed results.
+  */
   class OutOfBounds : public ParserError{
     public:
       OutOfBounds(size_t pos);
@@ -36,16 +54,25 @@ namespace ArgParse{
     private:
       std::string _msg;
   };
+  /**
+   * @brief an internal data structure to handle the data keps in Arguments. 
+   * This structure specifically only keeps the data. 
+  */
   class ArgsData{
     public:
-      void setData(const std::string& data);
-      const std::string& getData() const;
-      void appendData(const std::string& data);
+      void set(const std::string& data);
+      const std::string& get() const;
+      void append(const std::string& data);
       std::vector<std::string> splitBySeparator(char sep) const;
+      void clear();
     private:
       std::string _data;
       bool _isInitialized = false;
   };
+  /**
+   * @brief a data structure that holds the data structure to keep the data for 
+   * arguments.
+  */
   class Args{
     public:
       Args(
@@ -58,7 +85,8 @@ namespace ArgParse{
       bool isMultiple() const;
       bool isRequired() const;
       bool isInitialized() const;
-      void appendOrSetData(const std::string& data);
+      void appendOrSet(const std::string& data);
+      void clear();
 
       // Split out
       template<typename Target>
@@ -73,6 +101,11 @@ namespace ArgParse{
       bool _many;
   };
 
+  /**
+   * @brief a parser that can be used to parse arguments given from the command
+   * line. Call parse(argc, argv, ...) to parse arguments given from the command
+   * line
+  */
   class Parser{
     using Key = std::string;
     public:
@@ -81,7 +114,7 @@ namespace ArgParse{
       /**
        * @brief adds a sequential argument to the parser
       */
-      void addSequentialArgument(T&& ...args);
+      void addSeqArgument(T&& ...args);
       template<typename... T>
       /**
        * @brief adds a keyed argument to the parser
@@ -132,10 +165,16 @@ namespace ArgParse{
       bool validateKey(const Key& key) const;
       bool doesKeyExist(const Key& key) const;
       bool doesPosExist(size_t pos) const;
+
+      /*
+        Operation on the parser itself
+      */
+      void reset(bool keepArg = true);
       
     private:
       std::map<Key, Args> _kwargs;
       std::vector<Args> _args;
+      bool _parsed = false;
 
       void _parse(int argc, char** argv);
       void _keyExistOrException(const Key& key) const;
@@ -143,11 +182,12 @@ namespace ArgParse{
       void _parsedOrException() const;
       Key _keyNameFromKey(const Key& key) const;
       void _parseArgv(int argc, char** argv);
-      bool _parsed = false;
+      void _reset();
+      void _resetKeepArgument();
   };
   template<typename T>
   inline T Args::convert() const{
-    return T(_data.getData());
+    return T(_data.get());
   }
   template<typename T>
   inline std::vector<T> Args::convert(char sep) const{
@@ -163,7 +203,7 @@ namespace ArgParse{
 
   // Parser
   template<typename... T>
-  inline void Parser::addSequentialArgument(T&& ...args){
+  inline void Parser::addSeqArgument(T&& ...args){
     _args.emplace_back(std::forward<T>(args)...);
   }
   template<typename ...T>
@@ -200,15 +240,15 @@ namespace ArgParse{
   }
   template<>
   inline double Args::convert<double>() const{
-    return std::atof(_data.getData().c_str());
+    return std::atof(_data.get().c_str());
   }
   template<>
   inline int Args::convert<int>() const{
-    return std::atoi(_data.getData().c_str());
+    return std::atoi(_data.get().c_str());
   }
   template<>
   inline bool Args::convert<bool>() const{
-    char firstCharacter = _data.getData().at(0);
+    char firstCharacter = _data.get().at(0);
     return firstCharacter == 't' || firstCharacter == 'T';
   }
   template<>

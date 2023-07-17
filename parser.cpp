@@ -26,15 +26,15 @@ namespace ArgParse{
   const char* OutOfBounds::what() const noexcept{
     return _msg.c_str();
   }
-  void ArgsData::setData(const std::string& data){
+  void ArgsData::set(const std::string& data){
     if (!_isInitialized) 
       _isInitialized = true;
     _data = data;
   }
-  const std::string& ArgsData::getData() const{
+  const std::string& ArgsData::get() const{
     return _data;
   }
-  void ArgsData::appendData(const std::string& data){
+  void ArgsData::append(const std::string& data){
     _data = _data.size() == 0 ? data : _data + ARG_SEPARATOR + data;
   }
   std::vector<std::string> ArgsData::splitBySeparator(char sep) const{
@@ -59,6 +59,10 @@ namespace ArgParse{
     }
     return separated;
   }
+  void ArgsData::clear(){
+    _data.clear();
+    _isInitialized = false;
+  }
   Args::Args(
     std::string&& helpString, bool required, bool many, 
     std::string&& defaultValue
@@ -69,7 +73,7 @@ namespace ArgParse{
     _many       = many;
   }
   const std::string& Args::data() const{
-    return _data.getData();
+    return _data.get();
   }
   const std::string& Args::defaultValue() const{
     return _default;
@@ -78,7 +82,7 @@ namespace ArgParse{
     return _helpString;
   }
   bool Args::isInitialized() const{
-    return _data.getData().size() != 0;
+    return _data.get().size() != 0;
   }
   bool Args::isMultiple() const{
     return _many;
@@ -86,11 +90,14 @@ namespace ArgParse{
   bool Args::isRequired() const{
     return _required;
   }
-  void Args::appendOrSetData(const std::string& data){
+  void Args::appendOrSet(const std::string& data){
     if(isMultiple()) 
-      _data.appendData(data);
+      _data.append(data);
     else
-      _data.setData(data);
+      _data.set(data);
+  }
+  void Args::clear(){
+    _data.clear();
   }
   bool Parser::doesKeyExist(const Key& key) const{
     return _kwargs.count(key) != 0;
@@ -201,13 +208,13 @@ namespace ArgParse{
         haveKey = true;
       }
       else if (!isKwargStart && haveKey){
-        _kwargs.at(curArgKey).appendOrSetData(arg);
+        _kwargs.at(curArgKey).appendOrSet(arg);
         haveKey = false;
       }
       else if (!isKwargStart && !haveKey){
         if (argCount > _args.size())
           throw OutOfBounds(argCount);
-        _args.at(argCount).appendOrSetData(arg);
+        _args.at(argCount).appendOrSet(arg);
         argCount += 1;
       }
       else
@@ -219,13 +226,13 @@ namespace ArgParse{
     size_t errCount = 0;
     for(auto& entry : _args){
       if (!entry.isInitialized())
-        entry.appendOrSetData(entry.defaultValue());
+        entry.appendOrSet(entry.defaultValue());
       if (entry.isRequired() && !entry.isInitialized())
         throw GenericParserError("Ordered Arguments are incomplete");
     }
     for(auto& [key, entry] : _kwargs){
       if (!entry.isInitialized())
-        entry.appendOrSetData(entry.defaultValue());
+        entry.appendOrSet(entry.defaultValue());
       if (entry.isRequired() && !entry.isInitialized())
         throw GenericParserError(
           "Inordered Argument \'" + key + "\' is not given"
@@ -235,5 +242,22 @@ namespace ArgParse{
   void Parser::_parse(int argc, char** argv){
     checkForHelpArgv(argc, argv);
     _parseArgv(argc, argv);
+  }
+  void Parser::reset(bool keepArg){
+    if (keepArg)
+      _resetKeepArgument();
+    else
+      _reset();
+    _parsed = false;
+  }
+  void Parser::_reset(){
+    _kwargs.clear();
+    _args.clear();
+  }
+  void Parser::_resetKeepArgument(){
+    for(auto& [key, arg] : _kwargs)
+      arg.clear();
+    for(auto& arg : _args)
+      arg.clear();
   }
 };
