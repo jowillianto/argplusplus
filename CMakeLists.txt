@@ -22,11 +22,14 @@ target_include_directories(argplusplus
 )
 
 # Now Link the rest
-add_subdirectory(test-lib)
+# add_subdirectory(test-lib)
 
 add_executable(tests ${CMAKE_CURRENT_LIST_DIR}/tests.cpp)
+target_link_directories(tests
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/test-lib
+)
 target_link_libraries(tests
   PUBLIC 
-    test-lib
     argplusplus
 )
